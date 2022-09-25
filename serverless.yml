@@ -2,7 +2,7 @@ service: kinesisPitfalls
 
 plugins:
   - serverless-esbuild
-
+  - serverless-plugin-resource-tagging
 custom:
   project: betterdev
   baseName: ${self:custom.project}-${self:provider.stage}-${self:service}
@@ -14,11 +14,6 @@ custom:
 
 provider:
   name: aws
-  region: eu-west-1
-  stage: ${opt:stage, 'dev'}
-  stackName: ${self:custom.baseName}
-  deploymentBucket:
-    blockPublicAccess: true
   runtime: nodejs14.x
   memorySize: 256
   timeout: 5
@@ -26,6 +21,28 @@ provider:
   logRetentionInDays: 30
   environment:
     LOG_LEVEL: debug
+
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  stackName: ${self:custom.baseName}
+  deploymentBucket:  
+    name: ${file(./env.yml):deploymentBucket}
+  iam: 
+    role: !Sub arn:aws:iam::${AWS::AccountId}:role/${file(./env.yml):role}
+  stackTags:
+    applicationid: ${file(./env.yml):applicationid}
+
+# package:
+#   patterns:
+#     - '!*'
+#     - '*.js'
+
+  vpc:
+    securityGroupIds:
+      - sg-0adfa4f1afde03daa
+    subnetIds:
+      - subnet-00195eae1f1412adf
+      - subnet-0b92c09891657f730
 
 functions:
   consumer:
@@ -57,6 +74,9 @@ resources:
         Name: ${self:custom.baseName}
         RetentionPeriodHours: 24
         ShardCount: 2
+        StreamEncryption:
+          EncryptionType: KMS
+          KeyId: ${file(./env.yml):KeyId}
 
     RecordsDLQ:
       Type: AWS::SQS::Queue

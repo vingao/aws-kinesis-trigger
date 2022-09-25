@@ -41,7 +41,8 @@ const main = async () => {
             Data: encoder.encode(data),
         }));
 
-        await sleep(1000);
+        // await sleep(1000);
+        await sleep(1);
     }
 };
 

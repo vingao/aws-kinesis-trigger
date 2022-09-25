@@ -20,8 +20,9 @@ export const handler: KinesisStreamHandler = async (event, context?) => {
         });
 
         // uncomment to simulate processing errors
-        // if (data.counter > 0 && data.counter % 5 === 0) {
-        //     throw new Error('Unsupported counter value that is a multiple of 5: ' + data.counter);
-        // }
+        if (data.counter > 0 && data.counter % 5 === 0) {
+            logger.info('data.counter', {counter: data.counter});
+            throw new Error('Unsupported counter value that is a multiple of 5: ' + data.counter);
+        }
     });
 };
